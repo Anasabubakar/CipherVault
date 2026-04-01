@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  ciphervault:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_PATH=/data/ciphervault.db
+      - CORS_ORIGIN=*
+    volumes:
+      - ciphervault-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  ciphervault-data:
