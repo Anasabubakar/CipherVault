@@ -1,7 +1,6 @@
 /**
- * Key Derivation Function with Argon2id (preferred) and PBKDF2 (fallback).
- * Argon2id via argon2-browser WASM when available in browser environments.
- * Falls back to SubtleCrypto PBKDF2-SHA-256 in Node.js or when WASM unavailable.
+ * Key Derivation Function with PBKDF2-SHA-256 via WebCrypto API.
+ * Argon2id attempted at runtime via dynamic import (WASM), falls back to PBKDF2.
  *
  * Key derivation is DETERMINISTIC: same password + salt always produces same key.
  */
@@ -9,15 +8,12 @@ import type { KdfParams, DerivedKey } from '../types';
 
 const DEFAULT_PARAMS: KdfParams = {
   memorySize: 32768, // 32MB
-  iterations: 2,
+  iterations: 600000,
   parallelism: 1,
   hashLength: 32,
   targetMs: 300,
   chainLength: 1
 };
-
-let useArgon2 = true;
-let argon2Checked = false;
 
 async function pbkdf2Derive(
   password: string,
@@ -49,21 +45,27 @@ async function tryArgon2idHash(
   password: string,
   salt: ArrayBuffer,
   params: Partial<KdfParams> = {}
-): Promise<ArrayBuffer> {
-  const p = { ...DEFAULT_PARAMS, ...params };
-  const argon2 = await import('argon2-browser');
+): Promise<ArrayBuffer | null> {
+  try {
+    const p = { ...DEFAULT_PARAMS, ...params };
+    // Dynamic import - fails gracefully if WASM not available
+    const argon2Url = 'argon2-browser';
+    const argon2 = await import(/* @vite-ignore */ argon2Url);
+    
+    const result = await argon2.hash({
+      pass: password,
+      salt: new Uint8Array(salt),
+      type: argon2.ArgonType?.Argon2id ?? 2,
+      hashLen: p.hashLength,
+      mem: p.memorySize,
+      time: p.iterations,
+      parallelism: p.parallelism
+    });
 
-  const result = await argon2.hash({
-    pass: password,
-    salt: new Uint8Array(salt),
-    type: argon2.ArgonType.Argon2id,
-    hashLen: p.hashLength,
-    mem: p.memorySize,
-    time: p.iterations,
-    parallelism: p.parallelism
-  });
-
-  return result.hash;
+    return result.hash.buffer.slice(result.hash.byteOffset, result.hash.byteOffset + result.hash.byteLength) as ArrayBuffer;
+  } catch {
+    return null;
+  }
 }
 
 export async function argon2idHash(
@@ -73,23 +75,12 @@ export async function argon2idHash(
 ): Promise<ArrayBuffer> {
   const p = { ...DEFAULT_PARAMS, ...params };
 
-  if (useArgon2) {
-    try {
-      const result = await tryArgon2idHash(password, salt, params);
-      if (!argon2Checked) {
-        argon2Checked = true;
-      }
-      return result;
-    } catch {
-      if (!argon2Checked) {
-        argon2Checked = true;
-        useArgon2 = false;
-      }
-    }
-  }
+  // Try Argon2id first (better security), fall back to PBKDF2
+  const argon2Result = await tryArgon2idHash(password, salt, params);
+  if (argon2Result) return argon2Result;
 
-  // Fallback to PBKDF2
-  return pbkdf2Derive(password, salt, 600000, p.hashLength);
+  // Fallback to PBKDF2-SHA-256 (still strong, universally supported)
+  return pbkdf2Derive(password, salt, p.iterations, p.hashLength);
 }
 
 export async function adaptiveDeriveKey(
@@ -109,5 +100,5 @@ export function getKdfParams(): KdfParams {
 }
 
 export function formatKdfParams(params: KdfParams): string {
-  return `Argon2id: mem=${params.memorySize / 1024}MB, iter=${params.iterations}, chain=${params.chainLength}`;
+  return `PBKDF2-SHA256: iter=${params.iterations}, keyLen=${params.hashLength * 8}bit`;
 }

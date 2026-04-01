@@ -9,12 +9,12 @@ const HKDF_INFO_AUTH = new TextEncoder().encode('ciphervault-auth');
 export async function hkdf(
   masterKey: ArrayBuffer,
   salt: ArrayBuffer,
-  info: Uint8Array,
+  info: Uint8Array | ArrayBuffer,
   length: number = 32
 ): Promise<ArrayBuffer> {
   const importedKey = await crypto.subtle.importKey(
     'raw',
-    masterKey,
+    masterKey as BufferSource,
     'HKDF',
     false,
     ['deriveBits']
@@ -24,8 +24,8 @@ export async function hkdf(
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt,
-      info
+      salt: salt as BufferSource,
+      info: info as BufferSource
     },
     importedKey,
     length * 8

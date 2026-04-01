@@ -15,7 +15,7 @@ import { ImportDialog } from '../components/ImportDialog';
 export function NotePage() {
   const { siteName } = useParams<{ siteName: string }>();
   const navigate = useNavigate();
-  const { tabs, isLoading, error, password, siteUrl } = useNoteStore();
+  const { tabs, isLoading, error, siteUrl } = useNoteStore();
   const { settings } = useSettingsStore();
   const { loadNote, saveCurrentNote, deleteCurrentNote } = useNote();
 
@@ -23,7 +23,7 @@ export function NotePage() {
   const [isNewNote, setIsNewNote] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, _setActiveTab] = useState(0);
 
   const decodedName = decodeURIComponent(siteName || '');
 

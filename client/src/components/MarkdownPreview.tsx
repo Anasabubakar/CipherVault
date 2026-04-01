@@ -16,11 +16,11 @@ export function MarkdownPreview({ content }: MarkdownPreviewProps) {
     try {
       const renderer = new marked.Renderer();
 
-      renderer.code = ({ text, lang }: { text: string; lang?: string }) => {
+      renderer.code = function({ text, lang }: { text: string; lang?: string | undefined; escaped?: boolean }) {
         const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
         const highlighted = hljs.highlight(text, { language }).value;
         return `<pre class="hljs"><code class="language-${language}">${highlighted}</code></pre>`;
-      };
+      } as any;
 
       return marked.parse(content, { renderer }) as string;
     } catch {

@@ -1,7 +1,21 @@
 /**
  * SHA-256 and HMAC-SHA-256 via WebCrypto API.
  */
-import { arrayBufferToHex, arrayBufferToBase64, base64ToArrayBuffer } from './utils';
+
+function arrayBufferToHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
 
 export async function sha256(data: string | ArrayBuffer): Promise<ArrayBuffer> {
   const input = typeof data === 'string' ? new TextEncoder().encode(data) : data;
