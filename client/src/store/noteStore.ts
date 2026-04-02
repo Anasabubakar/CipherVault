@@ -7,6 +7,7 @@ interface NoteStore {
   siteHash: string;
   password: string;
   tabs: Tab[];
+  activeTabId: string;
   isModified: boolean;
   isLoading: boolean;
   error: string | null;
@@ -19,6 +20,7 @@ interface NoteStore {
   setSiteHash: (hash: string) => void;
   setPassword: (password: string) => void;
   setTabs: (tabs: Tab[]) => void;
+  setActiveTabId: (id: string) => void;
   addTab: () => void;
   removeTab: (id: string) => void;
   updateTabContent: (id: string, content: string) => void;
@@ -42,11 +44,13 @@ const createDefaultTab = (): Tab => ({
   order: 0
 });
 
+const firstTab = createDefaultTab();
 const initialState = {
   siteUrl: '',
   siteHash: '',
   password: '',
-  tabs: [createDefaultTab()],
+  tabs: [firstTab],
+  activeTabId: firstTab.id,
   isModified: false,
   isLoading: false,
   error: null,
@@ -64,6 +68,7 @@ export const useNoteStore = create<NoteStore>((set) => ({
   setPassword: (password) => set({ password }),
 
   setTabs: (tabs) => set({ tabs, isModified: true }),
+  setActiveTabId: (activeTabId) => set({ activeTabId }),
 
   addTab: () =>
     set((state) => {
@@ -73,7 +78,7 @@ export const useNoteStore = create<NoteStore>((set) => ({
         content: '',
         order: state.tabs.length
       };
-      return { tabs: [...state.tabs, newTab], isModified: true };
+      return { tabs: [...state.tabs, newTab], activeTabId: newTab.id, isModified: true };
     }),
 
   removeTab: (id) =>
@@ -82,7 +87,8 @@ export const useNoteStore = create<NoteStore>((set) => ({
       const tabs = state.tabs
         .filter((t) => t.id !== id)
         .map((t, i) => ({ ...t, order: i }));
-      return { tabs, isModified: true };
+      const activeTabId = state.activeTabId === id ? tabs[0].id : state.activeTabId;
+      return { tabs, activeTabId, isModified: true };
     }),
 
   updateTabContent: (id, content) =>
@@ -125,5 +131,8 @@ export const useNoteStore = create<NoteStore>((set) => ({
       toasts: state.toasts.filter((t) => t.id !== id)
     })),
 
-  reset: () => set({ ...initialState, tabs: [createDefaultTab()] })
+  reset: () => {
+    const defaultTab = createDefaultTab();
+    set({ ...initialState, tabs: [defaultTab], activeTabId: defaultTab.id });
+  }
 }));

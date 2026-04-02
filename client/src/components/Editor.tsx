@@ -39,7 +39,7 @@ export function Editor({ tabId }: EditorProps) {
 
   return (
     <div className="flex-1 flex flex-col relative">
-      <div className="flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-850 border-b text-xs text-gray-400">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-gray-50 dark:bg-gray-800/80 border-b text-xs text-gray-500 dark:text-gray-400">
         <span>{lines.length} lines • {tab.content.length} characters</span>
         <button
           onClick={() => setShowLineNumbers(!showLineNumbers)}

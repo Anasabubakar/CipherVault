@@ -15,7 +15,7 @@ import { ImportDialog } from '../components/ImportDialog';
 export function NotePage() {
   const { siteName } = useParams<{ siteName: string }>();
   const navigate = useNavigate();
-  const { tabs, isLoading, error, siteUrl } = useNoteStore();
+  const { tabs, activeTabId, isLoading, error } = useNoteStore();
   const { settings } = useSettingsStore();
   const { loadNote, saveCurrentNote, deleteCurrentNote } = useNote();
 
@@ -23,7 +23,8 @@ export function NotePage() {
   const [isNewNote, setIsNewNote] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [activeTab, _setActiveTab] = useState(0);
+
+  const activeTab = Math.max(0, tabs.findIndex((t) => t.id === activeTabId));
 
   const decodedName = decodeURIComponent(siteName || '');
 
@@ -89,9 +90,14 @@ export function NotePage() {
 
       {!showPasswordDialog && (
         <>
-          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b text-sm text-gray-500">
-            Vault: <strong className="text-gray-900 dark:text-white">{decodedName}</strong>
-            {siteUrl && <span className="ml-2 text-xs">• Encrypted with AES-256-GCM</span>}
+          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900/80 border-b flex items-center gap-2">
+            <svg className="w-4 h-4 text-vault-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
+            </svg>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Vault: <strong className="text-gray-900 dark:text-white">{decodedName}</strong>
+            </span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">• AES-256-GCM encrypted</span>
           </div>
 
           <TabBar />

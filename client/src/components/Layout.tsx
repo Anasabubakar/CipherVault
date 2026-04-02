@@ -17,17 +17,19 @@ export function Layout({ children }: LayoutProps) {
   }, [isDark]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2 text-vault-600 dark:text-vault-400 font-bold text-xl">
-          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
-            <path d="M12 11v4M12 7h.01" />
-          </svg>
-          CipherVault
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+      <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+        <a href="/" className="flex items-center gap-2.5 text-vault-600 dark:text-vault-400 font-bold text-xl group">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-vault-500 to-vault-700 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
+          <span className="hidden sm:inline">CipherVault</span>
         </a>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">
+          <span className="text-xs text-gray-400 dark:text-gray-500 hidden md:inline">
             AES-256-GCM • Client-side encryption
           </span>
           <ThemeToggle />
@@ -36,7 +38,7 @@ export function Layout({ children }: LayoutProps) {
       <main className="flex-1">
         {children}
       </main>
-      <footer className="border-t bg-white dark:bg-gray-900 px-4 py-2 text-center text-xs text-gray-400 dark:text-gray-500">
+      <footer className="border-t bg-white/80 dark:bg-gray-900/80 px-4 py-2.5 text-center text-xs text-gray-400 dark:text-gray-500">
         All encryption happens in your browser. The server never sees your plaintext or password.
       </footer>
       <Toast />
